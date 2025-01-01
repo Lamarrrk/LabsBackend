@@ -1,35 +1,42 @@
 package org.example.labsbackend.controllers;
-
+import jakarta.validation.Valid;
 import org.example.labsbackend.models.User;
+import org.example.labsbackend.services.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 
 @RestController
+@RequestMapping("/users")
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
-    @GetMapping("/user/{userId}")
-    public User getUser(@PathVariable Long userId) {
-        return users.getOrDefault(userId, null);
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
-    @PostMapping("/user")
-    public String createUser(@RequestBody User user) {
-        users.put(user.getId(), user);
-        return "User created successfully!";
+    @PostMapping
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
+        User createdUser = userService.createUser(user);
+        return ResponseEntity.ok(createdUser);
     }
 
-    @DeleteMapping("/user/{userId}")
-    public String deleteUser(@PathVariable Long userId) {
-        users.remove(userId);
-        return "User deleted successfully!";
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+        User user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/users")
-    public Collection<User> getAllUsers() {
-        return users.values();
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
-

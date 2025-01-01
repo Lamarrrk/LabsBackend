@@ -1,53 +1,46 @@
 package org.example.labsbackend.controllers;
 
 import org.example.labsbackend.models.Record;
-import org.springframework.http.HttpStatus;
+import org.example.labsbackend.services.RecordService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+import jakarta.validation.Valid;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.List;
 
 @RestController
-@RequestMapping("/record")
+@RequestMapping("/records")
 public class RecordController {
-    private final Map<Long, Record> records = new HashMap<>();
+    private final RecordService recordService;
+
+    public RecordController(RecordService recordService) {
+        this.recordService = recordService;
+    }
 
     @PostMapping
-    public String createRecord(@RequestBody Record record) {
-        record.setCreatedAt(LocalDateTime.now());
-        records.put(record.getId(), record);
-        return "Record created successfully!";
-    }
-
-    @GetMapping("/{recordId}")
-    public Record getRecord(@PathVariable Long recordId) {
-        return records.getOrDefault(recordId, null);
-    }
-
-    @DeleteMapping("/{recordId}")
-    public String deleteRecord(@PathVariable Long recordId) {
-        records.remove(recordId);
-        return "Record deleted successfully!";
+    public ResponseEntity<Record> createRecord(@Valid @RequestBody Record record) {
+        Record createdRecord = recordService.createRecord(record);
+        return ResponseEntity.ok(createdRecord);
     }
 
     @GetMapping
-    public Collection<Record> getRecordsByParams(
-            @RequestParam(required = false) Long UserID,
-            @RequestParam(required = false) Long CategoryID
-    ) {
-        if (UserID == null && CategoryID == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Потрібно вказати хоча б один параметр: UserID або CategoryID");
-        }
+    public ResponseEntity<List<Record>> getAllRecords() {
+        List<Record> records = recordService.getAllRecords();
+        return ResponseEntity.ok(records);
+    }
 
-        return records.values().stream()
-                .filter(record -> (UserID == null || record.getUserId().equals(UserID)) &&
-                        (CategoryID == null || record.getCategoryId().equals(CategoryID)))
-                .toList();
+    @GetMapping("/{id}")
+    public ResponseEntity<Record> getRecordById(@PathVariable Long id) {
+        Record record = recordService.getRecordById(id);
+        return ResponseEntity.ok(record);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecord(@PathVariable Long id) {
+        recordService.deleteRecord(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
 
 
 
