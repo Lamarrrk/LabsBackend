@@ -13,3 +13,5 @@
 "mvn clean install"
 "mvn spring-boot:run"
 Та перейдіть по посиланню: "http://localhost:8080/"
+
+## Lab3 ВАРІАНТ 1
